@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!--Moschini Sebastián, seba.sc@live.com.ar TP3 Front-->
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TP 3 Front</title>
+  </head>
+  <body style="background-color: rgb(43, 41, 39)">
+    <neo-rick id="1"></neo-rick>
+
+    <script>
+      /* Esta página una vez que ingresemos un ID para buscar un personaje, ira pasando de 1 a 1 automaticamente cada 3 segundos.*/
+      const t = document.createElement("template");
+      //Creamos el contenido HTML y le damos estilo.
+      t.innerHTML = `
+            <div class="container">
+                <h1>Personajes de Rick y Morty</h1>
+                <input placeholder="id personaje"/> <button>Buscar</button>
+                <div class="personajes">
+                    <div id="idpers"></div></br>
+                    <div id="name"></div></br>
+                    <div id="status"></div></br>
+                    <div id="species"></div></br>
+                    <div id="type"></div></br>
+                    <div id="gender"></div></br>
+                    <div id="image">
+                   
+                </div></br>
+                </div>
+            </div>
+            
+            <style>
+                
+                .container{
+                    flex-direction: column;
+                    display: flex;
+                    width: 100%;
+                    justify-content: center;
+                    align-items: center;
+                    background-color: darksalmon;
+                    height: 60rem;
+                    color: white;
+                }
+
+                h1{
+                    font-size: 40px;
+                }
+
+                button{
+                    width: 200px;
+                    padding: 5px;
+                    margin: 10px;
+                }
+
+                input{
+                    width: 187px;
+                    padding: 5px;
+                    margin: 10px;
+                }
+                img {
+                    margin: 20px;
+                    border-radius:50%;
+                    -webkit-border-radius:50%;
+                    box-shadow: 0px 0px 15px 15px #ec731e;
+                    -webkit-box-shadow: 0px 0px 15px 15px #ec731e;
+                }
+                .personajes{
+                    flex-direction: column;
+                    display: flex;
+                    width: 100%;
+                    justify-content: center;
+                    align-items: center;
+                }
+            </style>
+        `;
+      //Creamos la clase NeoRick que contiene la logica de la web
+      class NeoRick extends HTMLElement {
+        constructor() {
+          super();
+          this._shadowRoot = this.attachShadow({ mode: "open" });
+          this._shadowRoot.appendChild(t.content.cloneNode(true));
+        }
+
+        //Creamos el connected callback. El mismo tiene el evento del input y la declaracion de la función junto con la puesta en marcha de la misma, que nos va pasando de personaje cada 3 segundos.
+        connectedCallback() {
+          this.idpers = this._shadowRoot.querySelector("#idpers");
+          this.name = this._shadowRoot.querySelector("#name");
+          this.status = this._shadowRoot.querySelector("#status");
+          this.species = this._shadowRoot.querySelector("#species");
+          this.type = this._shadowRoot.querySelector("#type");
+          this.gender = this._shadowRoot.querySelector("#gender");
+          this.image = this._shadowRoot.querySelector("#image");
+          this.input = this._shadowRoot.querySelector("input");
+          this.b = this._shadowRoot.querySelector("button");
+
+          this.b.addEventListener("click", () => {
+            fetch(
+              "https://rickandmortyapi.com/api/character/" +
+                this.input.value +
+                "/"
+            )
+              .then((resp) => resp.json())
+              .then((data) => {
+                this.idpers.innerHTML = `Id: ${data.id}`;
+                this.name.innerHTML = `Nombre: ${data.name}`;
+                this.status.innerHTML = `Estado: ${data.status}`;
+                this.species.innerHTML = `Especie: ${data.species}`;
+                //Agregamos un if por que algunos no tienen tipo, entonces no queremos imprimir ese valor vacío.
+                if (data.type != "") {
+                  this.type.innerHTML = `Tipo: ${data.type}`;
+                } else {
+                  this.type.innerHTML = data.type;
+                }
+                this.gender.innerHTML = `Genero: ${data.gender}`;
+                this.image.innerHTML = `<img src="${data.image}">`;
+                time;
+              });
+            const time = setInterval(() => {
+              this.input.value++;
+              fetch(
+                "https://rickandmortyapi.com/api/character/" +
+                  this.input.value +
+                  "/"
+              )
+                .then((resp) => resp.json())
+                .then((data) => {
+                  this.idpers.innerHTML = `Id: ${data.id}`;
+                  this.name.innerHTML = `Nombre: ${data.name}`;
+                  this.status.innerHTML = `Estado: ${data.status}`;
+                  this.species.innerHTML = `Especie: ${data.species}`;
+                  if (data.type != "") {
+                    this.type.innerHTML = `Tipo: ${data.type}`;
+                  } else {
+                    this.type.innerHTML = data.type;
+                  }
+                  this.gender.innerHTML = `Genero: ${data.gender}`;
+                  this.image.innerHTML = `<img src="${data.image}">`;
+                  time;
+                });
+            }, 3000);
+          });
+        }
+
+        disconnectedCallback() {
+          if (confirm("Está por cerrar la pantalla. Desea continuar?")) {
+            window.close();
+          } else {
+            alert("Elemento borrado! Por favor refresca la pagina.");
+          }
+        }
+
+        //En este caso, al tener un fetch la funcion "time" declarada en el connectedCallback, el attributeChangedCallback solo llama a la funcion
+        attributeChangedCallback(name, oldVal, newVal) {
+          time;
+        }
+      }
+
+      window.customElements.define("neo-rick", NeoRick);
+    </script>
+  </body>
+</html>
